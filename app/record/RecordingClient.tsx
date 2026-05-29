@@ -16,6 +16,7 @@ import type { Keypoint } from "@/lib/pose/detector";
 import { evaluatePose } from "@/lib/pose/plankState";
 import type { EvalResult, PoseReason, StateKind } from "@/lib/pose/plankState";
 import { createAttemptSessionAction } from "./actions";
+import PlankIllustration from "@/components/PlankIllustration";
 
 type Phase = "intro" | "setup" | "calibration" | "recording";
 type CompletionKind = "COMPLETED" | "DISQUALIFIED";
@@ -547,7 +548,7 @@ function SetupOverlay({
   }
 
   return (
-    <div className="pointer-events-auto absolute inset-0 flex flex-col justify-between bg-zinc-950/85 px-5 py-4 backdrop-blur-sm">
+    <div className="pointer-events-auto absolute inset-0 flex flex-col justify-between bg-zinc-950/85 px-5 py-3.5 backdrop-blur-sm">
       <div className="flex items-center justify-between text-[11px] text-zinc-400">
         <Link
           href="/dashboard"
@@ -560,13 +561,18 @@ function SetupOverlay({
         </span>
       </div>
 
-      <div className="mx-auto max-w-md text-center">
-        <h2 className="text-2xl font-bold text-zinc-50">Frame your plank</h2>
-        <p className="mt-2 text-sm text-zinc-300">
+      <div className="mx-auto max-w-md text-center flex flex-col items-center">
+        {/* Render our beautiful, high-end Gemini-generated image card */}
+        <div className="my-2 h-20 w-auto overflow-hidden rounded-xl border border-zinc-800/80 shadow-md">
+          <PlankIllustration variant="viewfinder" className="h-full w-auto object-cover" />
+        </div>
+
+        <h2 className="text-xl font-bold text-zinc-50">Frame your plank</h2>
+        <p className="mt-1 text-xs text-zinc-300 leading-normal">
           Prop the phone perpendicular to your body. You should see your
           shoulder, hip, and ankle in the preview behind this panel.
         </p>
-        <ul className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[12px] text-zinc-400">
+        <ul className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 text-[11px] text-zinc-400">
           <li>· Phone in landscape</li>
           <li>· Side-on to camera</li>
           <li>· Whole body in frame</li>
@@ -576,7 +582,7 @@ function SetupOverlay({
       <button
         type="button"
         onClick={onReady}
-        className="mx-auto inline-flex h-12 w-full max-w-md items-center justify-center rounded-full bg-sky-500 px-6 text-base font-semibold text-zinc-950 transition hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+        className="mx-auto inline-flex h-11 w-full max-w-md items-center justify-center rounded-full bg-sky-500 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
       >
         I&apos;m ready — calibrate camera
       </button>
@@ -782,87 +788,102 @@ function Intro({
   const [hasConsented, setHasConsented] = useState(false);
 
   return (
-    <section className="mt-6 sm:mt-8 max-w-4xl mx-auto">
-      <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-zinc-100">
-        Plank qualifications portal
-      </h1>
-      <p className="mt-4 text-sm text-zinc-400 sm:text-base leading-relaxed">
-        Qualify for the Endurance League from home. Setup your camera perpendicular to your body, complete calibration, and submit your score.
-      </p>
+    <section className="mt-6 sm:mt-8 max-w-5xl mx-auto">
+      <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] items-center">
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-zinc-100">
+            Plank qualifications portal
+          </h1>
+          <p className="mt-4 text-sm text-zinc-400 sm:text-base leading-relaxed">
+            Qualify for the Endurance League from home. Setup your camera perpendicular to your body, complete calibration, and submit your score.
+          </p>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
-        {/* Practice Mode Card */}
-        <div className="flex flex-col justify-between rounded-3xl border border-zinc-800 bg-zinc-900/30 p-6 hover:border-zinc-700 transition">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-              Casual Training
-            </span>
-            <h3 className="mt-2 text-2xl font-bold text-zinc-200">Practice Mode</h3>
-            <p className="mt-3 text-xs leading-relaxed text-zinc-400">
-              Unlimited practice sessions to calibrate your camera, check your lighting, and test your endurance with live AI posture scores. Bypasses leaderboard logging.
-            </p>
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            {/* Practice Mode Card */}
+            <div className="flex flex-col justify-between rounded-3xl border border-zinc-800 bg-zinc-900/30 p-6 hover:border-zinc-700 transition">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                  Casual Training
+                </span>
+                <h3 className="mt-2 text-2xl font-bold text-zinc-200">Practice Mode</h3>
+                <p className="mt-3 text-xs leading-relaxed text-zinc-400">
+                  Unlimited practice sessions to calibrate your camera, check your lighting, and test your endurance with live AI posture scores. Bypasses leaderboard logging.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onStartPractice}
+                className="mt-6 inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 px-6 text-sm font-semibold text-zinc-100 transition hover:border-zinc-500 focus:outline-none"
+              >
+                Start practice run
+              </button>
+            </div>
+
+            {/* Official Mode Card */}
+            <div className="flex flex-col justify-between rounded-3xl border border-sky-500/20 bg-sky-500/[0.03] p-6 hover:border-sky-500/40 transition">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-sky-400">
+                  League Tryouts
+                </span>
+                <h3 className="mt-2 text-2xl font-bold text-sky-300">Official Competition</h3>
+                <p className="mt-3 text-xs leading-relaxed text-zinc-400">
+                  Qualify for specific events. Employs signed attempt sessions and real-time anti-cheat browser tracking (focus losses, window blurring, frame rates).
+                </p>
+
+                <div className="mt-5">
+                  <label htmlFor="event-select" className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                    Select qualification event
+                  </label>
+                  <select
+                    id="event-select"
+                    value={selectedEvent}
+                    onChange={(e) => setSelectedEvent(e.target.value)}
+                    className="mt-2 w-full h-11 rounded-xl bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-300 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  >
+                    <option value="">-- Choose an Event --</option>
+                    {events.map((ev) => (
+                      <option key={ev.id} value={ev.id}>
+                        {ev.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mt-4 flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    id="consent-check"
+                    checked={hasConsented}
+                    onChange={(e) => setHasConsented(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-sky-500 focus:ring-sky-500 focus:ring-offset-zinc-950"
+                  />
+                  <label htmlFor="consent-check" className="text-[10px] text-zinc-400 leading-tight">
+                    I have read and agree to the <Link href="/terms" target="_blank" className="text-sky-400 hover:underline">Terms of Competition</Link>, <Link href="/privacy" target="_blank" className="text-sky-400 hover:underline">Privacy Policy</Link>, and <Link href="/safety" target="_blank" className="text-sky-400 hover:underline">Safety Disclaimer</Link>. I confirm I am physically fit to participate.
+                  </label>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => selectedEvent && hasConsented && onStartOfficial(selectedEvent)}
+                disabled={!selectedEvent || !hasConsented}
+                className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-sky-500 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
+              >
+                Start official tryout
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={onStartPractice}
-            className="mt-6 inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 px-6 text-sm font-semibold text-zinc-100 transition hover:border-zinc-500 focus:outline-none"
-          >
-            Start practice run
-          </button>
         </div>
 
-        {/* Official Mode Card */}
-        <div className="flex flex-col justify-between rounded-3xl border border-sky-500/20 bg-sky-500/[0.03] p-6 hover:border-sky-500/40 transition">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-sky-400">
-              League Tryouts
-            </span>
-            <h3 className="mt-2 text-2xl font-bold text-sky-300">Official Competition</h3>
-            <p className="mt-3 text-xs leading-relaxed text-zinc-400">
-              Qualify for specific events. Employs signed attempt sessions and real-time anti-cheat browser tracking (focus losses, window blurring, frame rates).
-            </p>
-
-            <div className="mt-5">
-              <label htmlFor="event-select" className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                Select qualification event
-              </label>
-              <select
-                id="event-select"
-                value={selectedEvent}
-                onChange={(e) => setSelectedEvent(e.target.value)}
-                className="mt-2 w-full h-11 rounded-xl bg-zinc-950 border border-zinc-800 px-3 text-xs text-zinc-300 focus:outline-none focus:ring-1 focus:ring-sky-500"
-              >
-                <option value="">-- Choose an Event --</option>
-                {events.map((ev) => (
-                  <option key={ev.id} value={ev.id}>
-                    {ev.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="mt-4 flex items-start gap-2">
-              <input
-                type="checkbox"
-                id="consent-check"
-                checked={hasConsented}
-                onChange={(e) => setHasConsented(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-sky-500 focus:ring-sky-500 focus:ring-offset-zinc-950"
-              />
-              <label htmlFor="consent-check" className="text-[10px] text-zinc-400 leading-tight">
-                I have read and agree to the <Link href="/terms" target="_blank" className="text-sky-400 hover:underline">Terms of Competition</Link>, <Link href="/privacy" target="_blank" className="text-sky-400 hover:underline">Privacy Policy</Link>, and <Link href="/safety" target="_blank" className="text-sky-400 hover:underline">Safety Disclaimer</Link>. I confirm I am physically fit to participate.
-              </label>
-            </div>
+        {/* Right side illustration card on desktop */}
+        <div className="hidden lg:block relative">
+          <div
+            aria-hidden
+            className="absolute -inset-4 -z-10 rounded-3xl bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.15),_transparent_70%)] blur-2xl"
+          />
+          <div className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/30 p-4 ring-1 ring-zinc-800/40 shadow-2xl backdrop-blur-sm">
+            <PlankIllustration variant="hero" className="h-auto w-full rounded-2xl object-cover" />
           </div>
-
-          <button
-            type="button"
-            onClick={() => selectedEvent && hasConsented && onStartOfficial(selectedEvent)}
-            disabled={!selectedEvent || !hasConsented}
-            className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-sky-500 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
-          >
-            Start official tryout
-          </button>
         </div>
       </div>
     </section>

@@ -19,7 +19,7 @@ type Props = {
 
 export default function PlankIllustration({
   className,
-  imageSrc,
+  imageSrc = "/plank-illustration.png",
   variant = "viewfinder",
 }: Props) {
   if (imageSrc) {
