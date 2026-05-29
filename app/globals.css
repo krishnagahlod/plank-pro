@@ -2,26 +2,101 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #09090b;
+  color: #fafafa;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+/* -----------------------------------------------------------------------
+ * Motion utilities
+ *
+ * Lightweight, dependency-free animations. Tailwind's built-ins cover
+ * the common cases; these add specific effects we use for the plank
+ * illustration and hero polish. All respect prefers-reduced-motion below.
+ * --------------------------------------------------------------------- */
+
+@keyframes breathe {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+@keyframes pulse-keypoint {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.25); opacity: 0.7; }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0;   }
+}
+
+@keyframes scan-sweep {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(120%);  opacity: 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-cta {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+  50%      { box-shadow: 0 0 0 14px rgba(56, 189, 248, 0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -150% 0; }
+  100% { background-position: 250% 0; }
+}
+
+.animate-breathe        { animation: breathe         4.5s ease-in-out infinite; transform-origin: center; }
+.animate-pulse-keypoint { animation: pulse-keypoint  2.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.animate-pulse-ring     { animation: pulse-ring      2.2s ease-out      infinite; transform-origin: center; transform-box: fill-box; }
+.animate-scan-sweep     { animation: scan-sweep      5s ease-in-out  infinite; }
+.animate-fade-up        { animation: fade-up         0.55s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-glow-cta       { animation: glow-cta        2.4s ease-out infinite; }
+
+/* Staggered delays for sequenced reveals. */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
+
+/* Card hover-lift — used across landing, dashboard, intro. */
+.hover-lift {
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+  border-color: rgb(63 63 70);
+  box-shadow: 0 18px 40px -20px rgba(56, 189, 248, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe,
+  .animate-pulse-keypoint,
+  .animate-pulse-ring,
+  .animate-scan-sweep,
+  .animate-fade-up,
+  .animate-glow-cta {
+    animation: none !important;
+  }
+  .hover-lift {
+    transition: none !important;
+  }
+  .hover-lift:hover {
+    transform: none !important;
   }
 }

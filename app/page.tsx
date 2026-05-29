@@ -1,101 +1,172 @@
-import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import PlankIllustration from "@/components/PlankIllustration";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  // Logged-in users land on their dashboard, not the marketing page.
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) redirect("/dashboard");
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="relative flex min-h-screen flex-col bg-zinc-950 text-zinc-50">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[70vh] bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_55%)]"
+      />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      <header className="relative z-10 border-b border-zinc-900/80 bg-zinc-950/60 backdrop-blur">
+        <nav
+          aria-label="Primary"
+          className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8"
+        >
+          <Link
+            href="/"
+            className="text-sm font-bold tracking-[0.2em] text-sky-400 outline-none transition focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 rounded"
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            PLANK-PRO
+          </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/leaderboard"
+              className="hidden h-10 items-center rounded-full px-3 text-sm font-semibold text-zinc-300 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 sm:inline-flex"
+            >
+              Leaderboard
+            </Link>
+            <Link
+              href="/events"
+              className="inline-flex h-10 items-center rounded-full px-3 text-sm font-semibold text-zinc-300 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+            >
+              Events
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center rounded-full border border-zinc-700 px-4 text-sm font-semibold text-zinc-100 transition hover:border-zinc-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+            >
+              Log in
+            </Link>
+          </div>
+        </nav>
+      </header>
+
+      <main
+        id="main"
+        className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-5 sm:px-8"
+      >
+        <section className="grid items-center gap-10 pt-14 pb-16 sm:pt-20 sm:pb-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
+          <div className="animate-fade-up">
+            <span className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-zinc-300">
+              Selection round · v0.1
+            </span>
+            <h1 className="mt-5 text-balance text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+              Hold the line.
+              <br />
+              <span className="text-sky-400">Make the cut.</span>
+            </h1>
+            <p className="animate-fade-up delay-100 mt-5 max-w-xl text-base text-zinc-300 sm:text-lg">
+              Record a live plank through your webcam. Our AI scores your form
+              and duration in real time. Your highest score lands on the
+              public leaderboard.
+            </p>
+
+            <div className="animate-fade-up delay-200 mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/register"
+                className="animate-glow-cta inline-flex h-12 items-center justify-center rounded-full bg-sky-500 px-7 text-sm font-semibold text-zinc-950 shadow-lg shadow-sky-500/20 transition hover:scale-[1.02] hover:bg-sky-400 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+              >
+                Register &amp; record
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 px-7 text-sm font-semibold text-zinc-100 transition hover:border-zinc-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+              >
+                View leaderboard
+              </Link>
+            </div>
+          </div>
+
+          <div className="animate-fade-up delay-300 relative">
+            <div
+              aria-hidden
+              className="absolute -inset-6 -z-10 rounded-3xl bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.22),_transparent_70%)] blur-2xl"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <PlankIllustration variant="hero" className="h-auto w-full" />
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="how-it-works"
+          className="border-t border-zinc-900 py-14"
+        >
+          <h2
+            id="how-it-works"
+            className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400"
           >
-            Read our docs
-          </a>
-        </div>
+            How it works
+          </h2>
+          <ol className="mt-5 grid gap-4 sm:grid-cols-3">
+            <Step
+              n={1}
+              title="Register"
+              body="Name, email, city — under a minute."
+            />
+            <Step
+              n={2}
+              title="Record"
+              body="Side-on webcam plank, scored frame-by-frame."
+            />
+            <Step
+              n={3}
+              title="Rank"
+              body="Best score lands on the public leaderboard."
+            />
+          </ol>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="relative z-10 border-t border-zinc-900/80">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 text-xs text-zinc-500 sm:px-8">
+          <span>Hold as long as you can. Best score counts.</span>
+          <Link
+            href="/admin"
+            className="rounded text-zinc-400 transition hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+          >
+            Admin
+          </Link>
+        </div>
       </footer>
     </div>
   );
 }
+
+function Step({
+  n,
+  title,
+  body,
+}: {
+  n: number;
+  title: string;
+  body: string;
+}) {
+  return (
+    <li
+      className="hover-lift animate-fade-up rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5"
+      style={{ animationDelay: `${n * 100}ms` }}
+    >
+      <div
+        aria-hidden
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-500/15 text-sm font-bold text-sky-300"
+      >
+        {n}
+      </div>
+      <div className="mt-3 text-base font-semibold text-zinc-100">{title}</div>
+      <p className="mt-1 text-sm text-zinc-400">{body}</p>
+    </li>
+  );
+}
+
