@@ -322,6 +322,28 @@ export function evaluatePose(kps: Keypoint[]): EvalResult {
     };
   }
 
+  const kneeDrop = knee && kneeScore >= FORM.MIN_CONFIDENCE ? knee.y - shoulder.y : -Infinity;
+  if (kneeDrop > supportDrop * 0.85) {
+    return {
+      reason: "body_not_elevated",
+      formValid: false,
+      side,
+      hipAngle: null,
+      kneeAngle: null,
+      bodyTiltDeg,
+      elevationRatio,
+      armBodyAngle,
+      elbowAlignment: null,
+      frameQuality: null,
+      shoulderScore,
+      elbowScore,
+      wristScore,
+      hipScore,
+      kneeScore,
+      ankleScore,
+    };
+  }
+
   if (
     armBodyAngle === null ||
     armBodyAngle < FORM.ARM_BODY_ANGLE_MIN ||
