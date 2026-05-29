@@ -190,25 +190,19 @@ export default function RecordingClient({ userName, attemptNumber, events }: Pro
         if (calibrationPassedRef.current) return;
 
         const dt = dtMs / 1000;
-        if (ev.formValid) {
-          setCalibrationValidSeconds((prev) => {
-            const next = prev + dt;
-            if (next >= 3.0 && !calibrationPassedRef.current) {
-              calibrationPassedRef.current = true;
-              setCalibrationPassed(true);
-              announcer.announce("transition", "Calibration successful. Starting attempt.");
-              setTimeout(() => {
-                beginRecordingRef.current?.();
-              }, 2000);
-              return 3.0;
-            }
-            return next;
-          });
-        } else {
-          // Penalize invalid frames but don't instantly reset, so tiny tracking glitches
-          // don't completely reset a user's calibration progress.
-          setCalibrationValidSeconds((prev) => Math.max(0, prev - dt * 2));
-        }
+        setCalibrationValidSeconds((prev) => {
+          const next = prev + dt;
+          if (next >= 5.0 && !calibrationPassedRef.current) {
+            calibrationPassedRef.current = true;
+            setCalibrationPassed(true);
+            announcer.announce("transition", "Ready. Starting attempt.");
+            setTimeout(() => {
+              beginRecordingRef.current?.();
+            }, 1000);
+            return 5.0;
+          }
+          return next;
+        });
       } else if (phase === "recording") {
         frameTimesRef.current.push(dtMs);
         timer.tick(kps, dtMs);
@@ -612,54 +606,36 @@ function DesktopCalibrationPanel({
   passed: boolean;
   onStart: () => void;
 }) {
-  const percent = Math.min(100, (validSeconds / 3.0) * 100);
+  const percent = Math.min(100, (validSeconds / 5.0) * 100);
   
   return (
     <div className="flex flex-col gap-4 rounded-3xl bg-zinc-900/60 p-6 ring-1 ring-zinc-800/40 backdrop-blur-md">
       <div>
         <span className="text-[10px] font-bold uppercase tracking-widest text-sky-400">
-          Scoring Governance
+          Preparation
         </span>
         <h3 className="mt-1 text-2xl font-extrabold text-zinc-100">
-          Plank Calibration
+          Get Ready
         </h3>
       </div>
 
       <p className="text-xs leading-relaxed text-zinc-400">
-        To start a verified official attempt, please get into a stable side-on plank position. Holds must clear our strict pose heuristics for 3 continuous seconds.
+        Please get into a stable side-on plank position. The attempt will begin automatically in a few seconds.
       </p>
 
-      <div className="flex flex-col gap-2 rounded-2xl bg-zinc-950/40 p-4 ring-1 ring-zinc-800/40">
-        <CalibrateCheck label="Camera Feed Active" checked={!!diag} />
-        <CalibrateCheck label="Side-on Profile View" checked={!!diag && diag.reason !== "body_not_side_on"} />
-        <CalibrateCheck label="Full Body in Frame" checked={!!diag && diag.reason !== "body_not_visible"} />
-        <CalibrateCheck label="Horizontal Alignment" checked={!!diag && diag.reason !== "body_not_horizontal"} />
-        <CalibrateCheck label="Suspended Elevation" checked={!!diag && diag.reason !== "body_not_elevated"} />
+      <div className="min-h-12 mt-4">
+        <div className={`rounded-xl px-4 py-3 text-xs font-semibold ${
+          passed 
+            ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/20" 
+            : "bg-sky-500/10 text-sky-300 ring-1 ring-sky-500/20 animate-pulse"
+        }`}>
+          {passed 
+            ? "✅ Ready! Starting attempt..." 
+            : `Starting in ${Math.max(0, 5.0 - validSeconds).toFixed(1)}s`}
+        </div>
       </div>
 
-      <div className="min-h-12">
-        {diag ? (
-          <div className={`rounded-xl px-4 py-3 text-xs font-semibold ${
-            passed 
-              ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/20" 
-              : diag.formValid
-                ? "bg-sky-500/10 text-sky-300 ring-1 ring-sky-500/20 animate-pulse"
-                : "bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/20"
-          }`}>
-            {passed 
-              ? "✅ Calibration successful! You are ready." 
-              : diag.formValid 
-                ? `Hold still... ${(3.0 - validSeconds).toFixed(1)}s remaining`
-                : calibrationAlertText(diag.reason)}
-          </div>
-        ) : (
-          <div className="rounded-xl bg-zinc-950/60 px-4 py-3 text-xs text-zinc-500 text-center ring-1 ring-zinc-800/40 animate-pulse">
-            Awaiting camera keypoints...
-          </div>
-        )}
-      </div>
-
-      <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
+      <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden mt-4">
         <div 
           className={`h-full transition-all duration-100 ${passed ? "bg-emerald-400" : "bg-sky-400"}`}
           style={{ width: `${percent}%` }}
@@ -670,9 +646,9 @@ function DesktopCalibrationPanel({
         type="button"
         onClick={onStart}
         disabled={!passed}
-        className="mt-2 inline-flex h-12 items-center justify-center rounded-full bg-sky-500 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
+        className="mt-4 inline-flex h-12 items-center justify-center rounded-full bg-sky-500 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
       >
-        Start official attempt
+        Start attempt
       </button>
     </div>
   );
@@ -701,7 +677,7 @@ function MobileCalibrationOverlay({
   passed: boolean;
   onStart: () => void;
 }) {
-  const percent = Math.min(100, (validSeconds / 3.0) * 100);
+  const percent = Math.min(100, (validSeconds / 5.0) * 100);
 
   return (
     <div className="pointer-events-auto absolute inset-0 flex flex-col justify-between bg-zinc-950/80 px-5 py-4 backdrop-blur-md">
@@ -712,37 +688,27 @@ function MobileCalibrationOverlay({
         >
           ← Cancel
         </Link>
-        <span>Calibration Phase</span>
+        <span>Preparation Phase</span>
       </div>
 
       <div className="mx-auto w-full max-w-md text-center">
         <h2 className="text-xl font-extrabold text-zinc-50 tracking-wide">
-          Scoring Calibration
+          Get Ready
         </h2>
         <p className="mt-1 text-xs text-zinc-400">
-          Get into a side-on plank. Hold it for 3 continuous seconds.
+          Get into a side-on plank. The attempt will begin automatically.
         </p>
 
         <div className="mt-4 min-h-12 flex items-center justify-center">
-          {diag ? (
-            <div className={`w-full max-w-sm rounded-xl px-4 py-3 text-xs font-semibold ${
-              passed 
-                ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/20" 
-                : diag.formValid
-                  ? "bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/20 animate-pulse"
-                  : "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/20"
-            }`}>
-              {passed 
-                ? "✅ Ready! Tap Start Attempt below" 
-                : diag.formValid 
-                  ? `Hold still... ${(3.0 - validSeconds).toFixed(1)}s remaining`
-                  : calibrationAlertText(diag.reason)}
-            </div>
-          ) : (
-            <div className="w-full max-w-sm rounded-xl bg-zinc-900/40 px-4 py-3 text-xs text-zinc-500 text-center animate-pulse">
-              Locking onto body keypoints...
-            </div>
-          )}
+          <div className={`w-full max-w-sm rounded-xl px-4 py-3 text-xs font-semibold ${
+            passed 
+              ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/20" 
+              : "bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/20 animate-pulse"
+          }`}>
+            {passed 
+              ? "✅ Ready! Starting attempt..." 
+              : `Starting in ${Math.max(0, 5.0 - validSeconds).toFixed(1)}s`}
+          </div>
         </div>
 
         <div className="mx-auto mt-4 h-1 w-full max-w-sm rounded-full bg-zinc-800 overflow-hidden">
@@ -757,9 +723,9 @@ function MobileCalibrationOverlay({
         type="button"
         onClick={onStart}
         disabled={!passed}
-        className="pointer-events-auto mx-auto inline-flex h-12 w-full max-w-md items-center justify-center rounded-full bg-sky-500 px-6 text-base font-semibold text-zinc-950 transition hover:bg-sky-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
+        className="mx-auto mb-2 inline-flex h-11 w-full max-w-md items-center justify-center rounded-full bg-sky-500 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
       >
-        Start official attempt
+        Start attempt
       </button>
     </div>
   );
