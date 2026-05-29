@@ -564,7 +564,7 @@ function SetupOverlay({
       <div className="mx-auto max-w-md text-center flex flex-col items-center">
         {/* Render our beautiful, high-end Gemini-generated image card */}
         <div className="my-2 h-20 w-auto overflow-hidden rounded-xl border border-zinc-800/80 shadow-md">
-          <PlankIllustration variant="viewfinder" className="h-full w-auto object-cover" />
+          <PlankIllustration variant="viewfinder" className="h-full w-auto object-cover" imageSrc="/plank-overlay.png" />
         </div>
 
         <h2 className="text-xl font-bold text-zinc-50">Frame your plank</h2>

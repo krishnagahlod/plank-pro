@@ -5,19 +5,20 @@
 // This module is safe to import from both client and server components
 // because it only references NEXT_PUBLIC_* vars.
 
-function required(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(
-      `❌ Missing required environment variable: ${name}\n` +
-        `   → Copy .env.local.example to .env.local and fill in all values.`,
-    );
-  }
-  return value;
+/** Supabase project URL (public, used client + server). */
+export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+if (!SUPABASE_URL) {
+  throw new Error(
+    `❌ Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL\n` +
+      `   → Copy .env.local.example to .env.local and fill in all values.`,
+  );
 }
 
-/** Supabase project URL (public, used client + server). */
-export const SUPABASE_URL = required("NEXT_PUBLIC_SUPABASE_URL");
-
 /** Supabase anonymous key (public, used client + server). */
-export const SUPABASE_ANON_KEY = required("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+if (!SUPABASE_ANON_KEY) {
+  throw new Error(
+    `❌ Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY\n` +
+      `   → Copy .env.local.example to .env.local and fill in all values.`,
+  );
+}
