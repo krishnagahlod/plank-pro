@@ -193,16 +193,21 @@ export default function RecordingClient({ userName, attemptNumber, events }: Pro
         if (ev.formValid) {
           setCalibrationValidSeconds((prev) => {
             const next = prev + dt;
-            if (next >= 3.0) {
+            if (next >= 3.0 && !calibrationPassedRef.current) {
               calibrationPassedRef.current = true;
               setCalibrationPassed(true);
-              announcer.announce("transition", "Calibration successful. Start attempt when ready.");
+              announcer.announce("transition", "Calibration successful. Starting attempt.");
+              setTimeout(() => {
+                beginRecordingRef.current?.();
+              }, 2000);
               return 3.0;
             }
             return next;
           });
         } else {
-          setCalibrationValidSeconds(0);
+          // Penalize invalid frames but don't instantly reset, so tiny tracking glitches
+          // don't completely reset a user's calibration progress.
+          setCalibrationValidSeconds((prev) => Math.max(0, prev - dt * 2));
         }
       } else if (phase === "recording") {
         frameTimesRef.current.push(dtMs);
@@ -265,17 +270,22 @@ export default function RecordingClient({ userName, attemptNumber, events }: Pro
     }
   };
 
+  const beginRecordingRef = useRef<(() => void) | null>(null);
+
   const beginRecording = () => {
+    // Only proceed if we aren't already recording
+    if (phase === "recording") return;
     timer.reset();
     announcer.resetCooldowns();
     lastMilestoneRef.current = 0;
     setPhase("recording");
     timer.start();
-    announcer.announce("start", "Get into plank position");
+    announcer.announce("start", "Recording started");
     
     // Capture start snapshot
     setTimeout(() => captureSnapshot("start"), 100);
   };
+  beginRecordingRef.current = beginRecording;
 
   const onStop = () => timer.stop();
   const stopEnabled =
