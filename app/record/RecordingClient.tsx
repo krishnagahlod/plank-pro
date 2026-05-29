@@ -386,7 +386,6 @@ export default function RecordingClient({ userName, attemptNumber, events }: Pro
 
                 {phase === "calibration" && (
                   <MobileCalibrationOverlay
-                    diag={diag}
                     validSeconds={calibrationValidSeconds}
                     passed={calibrationPassed}
                     onStart={beginRecording}
@@ -424,7 +423,6 @@ export default function RecordingClient({ userName, attemptNumber, events }: Pro
 
               {phase === "calibration" ? (
                 <DesktopCalibrationPanel
-                  diag={diag}
                   validSeconds={calibrationValidSeconds}
                   passed={calibrationPassed}
                   onStart={beginRecording}
@@ -596,12 +594,10 @@ function SetupOverlay({
 
 /* Desktop Sidebar Calibration Panel */
 function DesktopCalibrationPanel({
-  diag,
   validSeconds,
   passed,
   onStart,
 }: {
-  diag: EvalResult | null;
   validSeconds: number;
   passed: boolean;
   onStart: () => void;
@@ -654,25 +650,14 @@ function DesktopCalibrationPanel({
   );
 }
 
-function CalibrateCheck({ label, checked }: { label: string; checked: boolean }) {
-  return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className={`text-[10px] ${checked ? "text-emerald-400" : "text-zinc-600"}`}>
-        {checked ? "✔" : "○"}
-      </span>
-      <span className={checked ? "text-zinc-200" : "text-zinc-500"}>{label}</span>
-    </div>
-  );
-}
+
 
 /* Mobile Calibration Overlay */
 function MobileCalibrationOverlay({
-  diag,
   validSeconds,
   passed,
   onStart,
 }: {
-  diag: EvalResult | null;
   validSeconds: number;
   passed: boolean;
   onStart: () => void;
@@ -884,22 +869,7 @@ function warnTextFor(reason: PoseReason | null): string {
   }
 }
 
-function calibrationAlertText(reason: PoseReason | null): string {
-  switch (reason) {
-    case "body_not_visible":
-      return "📸 Position your entire body inside the frame";
-    case "body_not_horizontal":
-      return "🧘 Get into a horizontal plank posture";
-    case "body_not_elevated":
-      return "💪 Lift your hips and body suspended above floor";
-    case "hip_angle_out_of_range":
-      return "📏 Keep your back and hips in a straight line";
-    case "body_not_side_on":
-      return "🚨 Camera is front-facing! Turn 90° side-on to camera";
-    default:
-      return "Fix your plank posture to calibrate";
-  }
-}
+
 function PortraitNudge() {
   return (
     <div className="pointer-events-auto absolute inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/95 px-6 text-center backdrop-blur-sm">
