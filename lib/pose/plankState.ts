@@ -153,26 +153,33 @@ export function evaluatePose(kps: Keypoint[]): EvalResult {
   ];
 
   let best:
-    | (typeof candidates)[number] & { avg: number }
+    | (typeof candidates)[number] & { avg: number; effectiveAnkle: Keypoint }
     | null = null;
 
   for (const c of candidates) {
-    if (!c.shoulder || !c.hip || !c.ankle) continue;
+    if (!c.shoulder || !c.hip) continue;
     const sh = c.shoulder.score ?? 0;
     const hp = c.hip.score ?? 0;
-    const an = c.ankle.score ?? 0;
+    
+    let effectiveAnkle = c.ankle;
+    let an = c.ankle.score ?? 0;
+    if (an < FORM.MIN_CONFIDENCE && c.knee && (c.knee.score ?? 0) >= FORM.MIN_CONFIDENCE) {
+        effectiveAnkle = c.knee;
+        an = c.knee.score ?? 0;
+    }
+
     if (sh < FORM.MIN_CONFIDENCE) continue;
     if (hp < FORM.MIN_CONFIDENCE) continue;
     if (an < FORM.MIN_CONFIDENCE) continue;
     const avg = (sh + hp + an) / 3;
     if (best === null || avg > best.avg) {
-      best = { ...c, avg };
+      best = { ...c, avg, effectiveAnkle };
     }
   }
 
   if (!best) return EMPTY_EVAL;
 
-  const { shoulder, elbow, wrist, hip, knee, ankle, side } = best;
+  const { shoulder, elbow, wrist, hip, knee, ankle, side, effectiveAnkle } = best;
   const shoulderScore = shoulder.score ?? 0;
   const elbowScore = elbow?.score ?? 0;
   const wristScore = wrist?.score ?? 0;
@@ -180,8 +187,8 @@ export function evaluatePose(kps: Keypoint[]): EvalResult {
   const kneeScore = knee?.score ?? 0;
   const ankleScore = ankle.score ?? 0;
 
-  const dx = ankle.x - shoulder.x;
-  const dy = ankle.y - shoulder.y;
+  const dx = effectiveAnkle.x - shoulder.x;
+  const dy = effectiveAnkle.y - shoulder.y;
   const dxAbs = Math.max(Math.abs(dx), 1);
   const tiltRatio = Math.abs(dy) / dxAbs;
   const bodyTiltDeg = (Math.atan2(Math.abs(dy), dxAbs) * 180) / Math.PI;
@@ -189,7 +196,7 @@ export function evaluatePose(kps: Keypoint[]): EvalResult {
 
   // Advanced Side-View Check (Anti-Cheat / Calibration Gate)
   // If both shoulders or both hips are visible, their horizontal distance
-  // should be small relative to bodyLength. Width > 10% indicates front/diagonal prop.
+  // should be small relative to bodyLength. Width > 20% indicates front/diagonal prop.
   const otherShoulder = side === "left" ? kps[KEYPOINT.RIGHT_SHOULDER] : kps[KEYPOINT.LEFT_SHOULDER];
   if (
     otherShoulder &&
@@ -197,7 +204,7 @@ export function evaluatePose(kps: Keypoint[]): EvalResult {
     (otherShoulder.score ?? 0) >= FORM.MIN_CONFIDENCE
   ) {
     const shoulderWidth = Math.abs(shoulder.x - otherShoulder.x);
-    if (bodyLength > 0 && shoulderWidth > bodyLength * 0.1) {
+    if (bodyLength > 0 && shoulderWidth > bodyLength * 0.25) {
       return {
         ...EMPTY_EVAL,
         reason: "body_not_side_on",
@@ -214,7 +221,7 @@ export function evaluatePose(kps: Keypoint[]): EvalResult {
     (otherHip.score ?? 0) >= FORM.MIN_CONFIDENCE
   ) {
     const hipWidth = Math.abs(hip.x - otherHip.x);
-    if (bodyLength > 0 && hipWidth > bodyLength * 0.1) {
+    if (bodyLength > 0 && hipWidth > bodyLength * 0.25) {
       return {
         ...EMPTY_EVAL,
         reason: "body_not_side_on",
@@ -340,11 +347,11 @@ export function evaluatePose(kps: Keypoint[]): EvalResult {
     };
   }
 
-  const hipAngle = getAngle(shoulder, hip, ankle);
+  const hipAngle = getAngle(shoulder, hip, effectiveAnkle);
 
   const kneeAngle =
-    knee && kneeScore >= FORM.MIN_CONFIDENCE
-      ? getAngle(hip, knee, ankle)
+    knee && kneeScore >= FORM.MIN_CONFIDENCE && effectiveAnkle !== knee
+      ? getAngle(hip, knee, effectiveAnkle)
       : null;
 
   const elbowAlignment =

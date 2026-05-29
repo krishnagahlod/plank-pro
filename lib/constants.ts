@@ -16,17 +16,17 @@ export const FORM = {
   MIN_VALID_SECONDS_FOR_DQ: 10,
   // Per-keypoint MoveNet score floor (shoulder/hip/ankle on the chosen side).
   // MediaPipe's visibility floor is ~0.3 — anything below is treated as hallucinated.
-  MIN_CONFIDENCE: 0.3,
+  MIN_CONFIDENCE: 0.2,
   TARGET_FPS: 30,
   // Body axis tilt limit. shoulder→ankle vector must satisfy |dy| <= TILT * |dx|.
   // 1.0 → up to 45° tilt from horizontal. Rejects seated/standing
   // (where dy >> dx) but tolerates non-ideal camera angles.
-  HORIZONTAL_TILT_MAX: 1.0,
+  HORIZONTAL_TILT_MAX: 1.5,
   // Elbow / wrist must sit at least this fraction of the shoulder→ankle
   // distance BELOW the shoulder. Distinguishes a plank (body suspended
   // above the supporting arm) from lying flat (everything at floor level).
   // A forearm plank typically gives a ratio of 0.25–0.40.
-  MIN_ELEVATION_RATIO: 0.2,
+  MIN_ELEVATION_RATIO: 0.1,
   // Angle (degrees) between the body axis (shoulder→ankle) and the supporting
   // arm (shoulder→wrist or shoulder→elbow). In a plank the arm goes roughly
   // perpendicular to the body (~90°). When lying flat with arms by the sides
@@ -60,7 +60,7 @@ export const FORM = {
   },
   // Frame must hit at least this quality (in addition to the existing
   // pass/fail gates) to count toward IN_PLANK time.
-  MIN_FRAME_QUALITY_FOR_VALID: 0.5,
+  MIN_FRAME_QUALITY_FOR_VALID: 0.35,
   // Hip-angle standard deviation at which stability score hits 0.
   STABILITY_FULL_LOSS_DEG: 15,
   // Each WARNING→IN_PLANK recovery costs this fraction of the final score,
